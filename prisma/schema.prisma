@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model PurchaseOrder {
+  id            String    @id @default(cuid())
+  shop          String
+  poNumber      String
+  supplierName  String
+  supplierEmail String?
+  status        String    @default("draft")
+  notes         String?
+  expectedDate  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  items         POItem[]
+}
+
+model POItem {
+  id              String        @id @default(cuid())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  purchaseOrderId String
+  productTitle    String
+  variantTitle    String?
+  sku             String?
+  quantity        Int
+  receivedQty     Int           @default(0)
+  unitCost        Float
+}
