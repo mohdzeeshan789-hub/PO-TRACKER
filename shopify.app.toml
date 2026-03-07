@@ -19,4 +19,4 @@ api_version = "2026-04"
 scopes = "write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
-redirect_urls = [ "https://po-tracker-production-ecf2.up.railway.app/api/auth" ]
+redirect_urls = [ "https://po-tracker-production-ecf2.up.railway.app/auth/callback" ]
