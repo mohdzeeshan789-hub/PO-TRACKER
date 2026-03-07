@@ -1,6 +1,6 @@
 client_id = "cc482569d4bad51ce457fdf3eaafc43e"
 name = "po-tracker"
-application_url = "https://caboose.proxy.rlwy.net:32153"
+application_url = "https://po-tracker-production-ecf2.up.railway.app"
 embedded = true
 
 [build]
@@ -19,4 +19,4 @@ api_version = "2026-04"
 scopes = "write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
-redirect_urls = [ "https://caboose.proxy.rlwy.net:32153/api/auth" ]
+redirect_urls = [ "https://po-tracker-production-ecf2.up.railway.app/api/auth" ]
