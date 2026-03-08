@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLoaderData } from "react-router";
-import { authenticate } from "../../shopify.server";
-import db from "../../db.server";
+import { authenticate } from "../shopify.server";
+import db from "../db.server";
 
 export async function loader({ request, params }) {
   const { session } = await authenticate.admin(request);
