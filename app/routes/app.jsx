@@ -1,27 +1,11 @@
 import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { authenticate, billing } from "../shopify.server";
-
-export const MONTHLY_PLAN = "PO Tracker Monthly";
+import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-
-  const billingCheck = await billing.require(request, {
-    plans: [MONTHLY_PLAN],
-    isTest: true,
-    onFailure: async () => billing.request(request, {
-      plan: MONTHLY_PLAN,
-      isTest: true,
-      returnUrl: process.env.SHOPIFY_APP_URL + "/app",
-    }),
-  });
-
-  return {
-    apiKey: process.env.SHOPIFY_API_KEY || "",
-    shop: session.shop,
-  };
+  await authenticate.admin(request);
+  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
 export default function App() {
