@@ -4,7 +4,19 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { billing } = await authenticate.admin(request);
+
+  await billing.require({
+    plans: ["PO Tracker Monthly"],
+    isTest: true,
+    onFailure: async () => {
+      await billing.request({
+        plan: "PO Tracker Monthly",
+        isTest: true,
+      });
+    },
+  });
+
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
