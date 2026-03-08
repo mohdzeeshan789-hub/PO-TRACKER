@@ -84,11 +84,3 @@ export async function action({ request }) {
     return data({ success: true });
   }
 }
-```
-
-Save **Ctrl+S** then push:
-```
-cd C:\Users\zeesh\po-tracker
-git add .
-git commit -m "Add email notifications with Resend"
-git push

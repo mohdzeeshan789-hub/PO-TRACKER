@@ -19,7 +19,7 @@ export async function sendPOStatusEmail({ to, poNumber, status, supplierName, ex
     received: "#16a34a",
   };
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: "PO Tracker <onboarding@resend.dev>",
     to,
     subject: `Purchase Order ${poNumber} — Status Update: ${statusLabels[status]}`,
@@ -31,7 +31,6 @@ export async function sendPOStatusEmail({ to, poNumber, status, supplierName, ex
         <div style="background: white; padding: 32px; border: 1px solid #e2e8f0; border-radius: 0 0 12px 12px;">
           <p style="font-size: 16px; color: #334155;">Dear <strong>${supplierName}</strong>,</p>
           <p style="color: #64748b;">Your purchase order status has been updated.</p>
-          
           <div style="background: #f8fafc; border-radius: 10px; padding: 20px; margin: 24px 0;">
             <table style="width: 100%;">
               <tr>
@@ -53,12 +52,10 @@ export async function sendPOStatusEmail({ to, poNumber, status, supplierName, ex
               </tr>` : ""}
             </table>
           </div>
-
-          <a href="${process.env.SHOPIFY_APP_URL}/vendor?po=${poNumber}" 
+          <a href="${process.env.SHOPIFY_APP_URL}/vendor?po=${poNumber}"
              style="display: block; text-align: center; background: #0284c7; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
             Track Your Order
           </a>
-
           <p style="color: #94a3b8; font-size: 12px; margin-top: 24px; text-align: center;">
             This email was sent automatically by PO Tracker.
           </p>
@@ -66,4 +63,6 @@ export async function sendPOStatusEmail({ to, poNumber, status, supplierName, ex
       </div>
     `,
   });
+
+  console.log("Email result:", JSON.stringify(result));
 }
