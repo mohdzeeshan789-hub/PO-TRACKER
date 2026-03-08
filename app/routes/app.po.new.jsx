@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 
 export default function NewPO() {
@@ -10,6 +10,8 @@ export default function NewPO() {
   const [status, setStatus] = useState("draft");
   const [items, setItems] = useState([{ productTitle: "", variantTitle: "", sku: "", quantity: 1, unitCost: 0 }]);
   const [saving, setSaving] = useState(false);
+  const [csvError, setCsvError] = useState("");
+  const fileRef = useRef();
 
   const addItem = () => setItems([...items, { productTitle: "", variantTitle: "", sku: "", quantity: 1, unitCost: 0 }]);
   const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
@@ -21,6 +23,57 @@ export default function NewPO() {
 
   const total = items.reduce((s, i) => s + i.quantity * i.unitCost, 0);
   const fmt = (n) => new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(n);
+
+  const downloadTemplate = () => {
+    const csv = "productTitle,variantTitle,sku,quantity,unitCost\nExample Product,Blue / Large,SKU-001,10,25.00\n";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "po-items-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCSV = (e) => {
+    setCsvError("");
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const lines = evt.target.result.trim().split("\n");
+        const headers = lines[0].toLowerCase().split(",").map(h => h.trim());
+        const required = ["producttitle", "quantity", "unitcost"];
+        for (const r of required) {
+          if (!headers.includes(r)) {
+            setCsvError(`Missing column: ${r}. Please use the template.`);
+            return;
+          }
+        }
+        const parsed = lines.slice(1).map(line => {
+          const vals = line.split(",").map(v => v.trim());
+          const get = (col) => vals[headers.indexOf(col)] || "";
+          return {
+            productTitle: get("producttitle"),
+            variantTitle: get("varianttitle"),
+            sku: get("sku"),
+            quantity: Number(get("quantity")) || 1,
+            unitCost: Number(get("unitcost")) || 0,
+          };
+        }).filter(i => i.productTitle);
+        if (parsed.length === 0) {
+          setCsvError("No valid items found in CSV.");
+          return;
+        }
+        setItems(parsed);
+      } catch {
+        setCsvError("Failed to parse CSV. Please use the template.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const handleSave = async () => {
     if (!supplier.trim()) return alert("Supplier name is required");
@@ -50,11 +103,11 @@ export default function NewPO() {
           <h3 style={{ marginTop: 0 }}>Supplier Info</h3>
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 13, color: "#64748b", marginBottom: 6 }}>Supplier Name *</label>
-            <input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="e.g. Global Electric Co." style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14 }} />
+            <input value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="e.g. Global Electric Co." style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14, boxSizing: "border-box" }} />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 13, color: "#64748b", marginBottom: 6 }}>Supplier Email</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="orders@supplier.com" type="email" style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14 }} />
+            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="orders@supplier.com" type="email" style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14, boxSizing: "border-box" }} />
           </div>
         </div>
 
@@ -81,10 +134,28 @@ export default function NewPO() {
       </div>
 
       <div style={{ background: "white", borderRadius: 12, padding: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0 }}>Line Items</h3>
-          <button onClick={addItem} style={{ background: "#f1f5f9", border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer" }}>+ Add Item</button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={downloadTemplate} style={{ background: "#f1f5f9", border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+              ⬇ Download Template
+            </button>
+            <button onClick={() => fileRef.current.click()} style={{ background: "#f1f5f9", border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+              📂 Import CSV
+            </button>
+            <input ref={fileRef} type="file" accept=".csv" onChange={handleCSV} style={{ display: "none" }} />
+            <button onClick={addItem} style={{ background: "#f1f5f9", border: "none", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+              + Add Item
+            </button>
+          </div>
         </div>
+
+        {csvError && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: 12, color: "#dc2626", marginBottom: 16, fontSize: 13 }}>
+            ❌ {csvError}
+          </div>
+        )}
+
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: "#f8fafc" }}>
