@@ -16,6 +16,13 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
+billing: {
+    "PO Tracker Monthly": {
+      amount: 9.99,
+      currencyCode: "USD",
+      interval: "EVERY_30_DAYS",
+    },
+  },
   future: {
     expiringOfflineAccessTokens: true,
   },
