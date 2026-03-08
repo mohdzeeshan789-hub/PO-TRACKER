@@ -62,6 +62,9 @@ export default function Index() {
                 <td style={{ padding: "14px 16px", fontWeight: 600 }}>{fmt(calcTotal(po.items))}</td>
                 <td style={{ padding: "14px 16px", color: "#64748b" }}>{po.expectedDate || "—"}</td>
                 <td style={{ padding: "14px 16px" }}>
+<button onClick={() => navigate("/app/import")} style={{ background: "#f1f5f9", color: "#334155", border: "none", padding: "10px 20px", borderRadius: 8, cursor: "pointer", fontSize: 15, marginRight: 10 }}>
+  ⬆ Bulk Import
+</button>
                   <button onClick={() => navigate(`/app/po/${po.id}`)} style={{ background: "#f1f5f9", border: "none", padding: "6px 14px", borderRadius: 6, cursor: "pointer" }}>
                     View
                   </button>
