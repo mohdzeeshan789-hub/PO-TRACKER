@@ -1,6 +1,7 @@
 import { data } from "react-router";
 import { authenticate } from "../shopify.server";
 import db from "../db.server";
+import { sendPOStatusEmail } from "../email.server";
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
@@ -14,7 +15,7 @@ export async function loader({ request }) {
 
 export async function action({ request }) {
   const { session } = await authenticate.admin(request);
-const body = await request.json();
+  const body = await request.json();
   const method = request.method;
 
   if (method === "POST") {
@@ -33,10 +34,22 @@ const body = await request.json();
       },
       include: { items: true }
     });
+
+    if (po.supplierEmail && po.status !== "draft") {
+      await sendPOStatusEmail({
+        to: po.supplierEmail,
+        poNumber: po.poNumber,
+        status: po.status,
+        supplierName: po.supplierName,
+        expectedDate: po.expectedDate,
+      });
+    }
+
     return data({ po });
   }
 
   if (method === "PATCH") {
+    const oldPo = await db.purchaseOrder.findUnique({ where: { id: body.id } });
     const po = await db.purchaseOrder.update({
       where: { id: body.id },
       data: {
@@ -52,6 +65,17 @@ const body = await request.json();
       },
       include: { items: true }
     });
+
+    if (po.supplierEmail && oldPo.status !== po.status) {
+      await sendPOStatusEmail({
+        to: po.supplierEmail,
+        poNumber: po.poNumber,
+        status: po.status,
+        supplierName: po.supplierName,
+        expectedDate: po.expectedDate,
+      });
+    }
+
     return data({ po });
   }
 
@@ -60,3 +84,11 @@ const body = await request.json();
     return data({ success: true });
   }
 }
+```
+
+Save **Ctrl+S** then push:
+```
+cd C:\Users\zeesh\po-tracker
+git add .
+git commit -m "Add email notifications with Resend"
+git push
