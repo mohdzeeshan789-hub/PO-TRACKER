@@ -14,7 +14,7 @@ export async function loader({ request }) {
 
 export async function action({ request }) {
   const { session } = await authenticate.admin(request);
-  const body = await request.data();
+const body = await request.json();
   const method = request.method;
 
   if (method === "POST") {
