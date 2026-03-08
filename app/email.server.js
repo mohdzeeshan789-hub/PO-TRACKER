@@ -1,9 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendPOStatusEmail({ to, poNumber, status, supplierName, expectedDate }) {
   if (!to) return;
+  if (!process.env.RESEND_API_KEY) {
+    console.log("RESEND_API_KEY not set, skipping email");
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   const statusLabels = {
     draft: "Draft",
